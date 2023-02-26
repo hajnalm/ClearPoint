@@ -25,5 +25,5 @@ I've added a few example unit tests for the **TodoItemsController** class. Note:
 I wrote documentation for the most important classes and methods. 
 
 
-# Frontend
+# Frontend changes
 At the current stage I haven't done any work on the frontend code. I'm happy to do the listed tasks once ClearPoint has an actual role that I would like to apply for.

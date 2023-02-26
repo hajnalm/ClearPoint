@@ -37,8 +37,8 @@ namespace TodoList.Api.Controllers
         /// <response code="500">If there was an error retrieving the items.</response>
         // GET: api/TodoItems
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(IEnumerable<TodoItemReadDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<TodoItemReadDto>>> GetTodoItems()
         {
             try
@@ -61,8 +61,12 @@ namespace TodoList.Api.Controllers
         /// <returns>The todo item with the given ID.</returns>
         /// <response code="200">Returns the item.</response>
         /// <response code="404">If there is no item with the given ID.</response>
+        /// <response code="500">If there was an error retrieving the file.</response>
         // GET: api/TodoItems/...
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(TodoItemReadDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<TodoItemReadDto>> GetTodoItem(Guid id)
         {
             try
@@ -95,6 +99,10 @@ namespace TodoList.Api.Controllers
         /// <response code="500">If there was an error creating or updating the item.</response>
         // PUT: api/TodoItems/... 
         [HttpPut]
+        [ProducesResponseType(typeof(TodoItemReadDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(TodoItemReadDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<TodoItemReadDto>> PutTodoItem(TodoItemWriteDto todoItem)
         {
             if (string.IsNullOrWhiteSpace(todoItem?.Description))
@@ -128,10 +136,10 @@ namespace TodoList.Api.Controllers
         /// <response code="400">If the item description is null, empty or whitespace, or if an item with the same description already exists and isn't marked as completed.</response>
         /// <response code="500">If an error occurs while creating the item.</response>
         [HttpPost]
-        [ProducesResponseType(typeof(TodoItemWriteDto), 201)]
-        [ProducesResponseType(typeof(string), 400)]
-        [ProducesResponseType(typeof(string), 500)]
-        public async Task<IActionResult> PostTodoItem(TodoItemWriteDto todoItem)
+        [ProducesResponseType(typeof(TodoItemReadDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<TodoItemReadDto>> PostTodoItem(TodoItemWriteDto todoItem)
         {
             if (string.IsNullOrWhiteSpace(todoItem?.Description))
             {
@@ -145,7 +153,8 @@ namespace TodoList.Api.Controllers
                 }
 
                 var createdItem = _repository.CreateTodoItem(_mapper.Map<TodoItem>(todoItem));
-                return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
+                var resultDto = _mapper.Map<TodoItemReadDto>(createdItem);
+                return CreatedAtAction(nameof(GetTodoItem), new { id = resultDto.Id }, resultDto);
             }
             catch(Exception e)
             {
